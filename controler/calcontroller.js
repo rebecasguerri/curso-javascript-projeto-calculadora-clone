@@ -11,15 +11,18 @@
         this.initialize();
         this.initButtonsEvents();
     }
+
     initialize(){
        this.setDisplayDateTime();
 
         setInterval(() =>{
            this.setDisplayDateTime();
         }, 1000);
+
+        this.setLastNumberToDisplay();
     }
 
-     addEventListenerAll(element, events, fn){
+    addEventListenerAll(element, events, fn){
 
         events.split(' ').forEach(event =>{
          element.addEventListener(event, fn, false);
@@ -30,10 +33,12 @@
 
   clearAll(){
         this._operetion = []
+        this.setLastNumberToDisplay();
     }
 
   clearEntry(){
         this._operation.pop();
+        this.setLastNumberToDisplay();
     }
 
   getLastOperation(){
@@ -57,12 +62,31 @@
   calc(){
         let last = this._operation.pop();
         let result = eval(this._operation.join(""));
-        this._operation = [result, last];
+
+        if(last == '%'){
+            result /= 100;
+
+            this._operation =[result];
+        }else{
+            
+            this._operation = [result, last];
+        }
+        
+        this.setLastNumberToDisplay();
     }
   setLastNumberToDisplay(){
-    let lastNumber;
-    for(let i = this_opreration
+        let lastNumber;
 
+        for(let i = this._operation.length-1; i>= 0 ; i --){
+
+            if(!this.isOperator(this._operation[i])){
+                lastNumber = this._operation[i];
+                break;
+            }
+        }
+        if(!lastNumber) lastNumber = 0;
+        
+        this.displayCalc = lastNumber
     }
 
     addOperation(value){
@@ -77,6 +101,7 @@
 
             }else{
                this.pushOperation(value);
+               this.setLastNumberToDisplay();
             }
 
         }else{
@@ -126,12 +151,12 @@
                 this.addOperation('*');
             break;
 
-            case 'pocento':
+            case 'porcento':
                 this.addOperation('%');
                break;  
 
             case 'igual':
-                
+                this.calc();
             break; 
 
             case 'ponto':
