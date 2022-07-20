@@ -1,6 +1,8 @@
  class calController{
     
     constructor(){
+        this._audio= new Audio('click.mp3');
+        this._audioOnOff = false;
         this._lastOperator = "";
         this._lastNumber = "";
         this._operation =[];
@@ -14,7 +16,21 @@
         this.initButtonsEvents();
         this.initKeyboard();
     }
-
+    copyToClipboard(){
+        let input = document.createElement('input');
+        input.value = this.displayCalc;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand("copy");
+        input.remove();
+    }
+    pasteFromClickboard(){
+        document.addEventListener('paste', e=>{
+           let text = e.clipboardData.getData('Text');
+           this.displayCalc = parseFloat(text);
+           console.log("ta funcionandooooooo uhuuu",text)
+        });
+    }
     initialize(){
        this.setDisplayDateTime();
 
@@ -23,11 +39,30 @@
         }, 1000);
 
         this.setLastNumberToDisplay();
-    }
+        this.pasteFromClickboard()
 
+        document.querySelectorAll('.btn-ac').forEach(btn =>{
+            btn.addEventListener('dblclick', e=>{
+                this.toggleAudio();
+            });
+        });
+    }
+    toggleAudio(){
+
+        this._audioOnOff = !this._audioOnOff;
+      
+    }
+    playAudio(){
+        if(this._audioOnOff){
+            this._audio.currentTime = 0;
+            this._audio.play();
+             
+        }
+    }
    initKeyboard(){
          document.addEventListener('keyup', e=>{
             //console.log(e.key)
+            this.playAudio();
             switch (e.key){
                 case 'Escape':
                     this.clearAll();
@@ -69,6 +104,10 @@
                 case '9': 
                     this.addOperation(parseInt(e.key));
                    break;
+
+                 case 'c':
+                    if(e.ctrlKey) this.copyToClipboard();
+                    break;  
             }
          });  
     }
@@ -113,7 +152,14 @@
     }
     getResult(){
         //console.log("getResult", this._operation)
-        return eval(this._operation.join(""));
+        try{
+          return eval(this._operation.join(""));
+        }catch(e){
+            setTimeout(()=>{
+                this.setError();
+            }, 1);
+            
+        }
 
      }
 
@@ -223,9 +269,13 @@
     }
 
     execBtn(value){
+
+        this.playAudio();
+
         switch (value){
             case 'ac':
                 this.clearAll();
+               
               break;
 
             case 'ce':
@@ -323,15 +373,19 @@
         return this._displayCalcEl.innerHTML;
     }
 
-    set displayCalc(valor){
-        this._displayCalcEl.innerHTML = valor;
+    set displayCalc(value){
+        if(value.toString().length > 10){
+            this.setError();
+            return false;
+        }
+        this._displayCalcEl.innerHTML = value;
     }
 
     get currentDate(){
         return new Date();
     }
-    set currentDate(valor){
-        this.currentDate = valor;
+    set currentDate(value){
+        this.currentDate = value;
     }
 }
 
